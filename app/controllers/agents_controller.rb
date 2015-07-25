@@ -50,7 +50,12 @@ class AgentsController < ApplicationController
     agent.name ||= '(Untitled)'
 
     if agent.valid?
-      results = agent.dry_run!
+      if event_payload = params[:event]
+        dummy_agent = Agents::ManualEventAgent.new(name: 'Dry-Runner')
+        event = dummy_agent.events.build(user: current_user, payload: event_payload)
+      end
+
+      results = agent.dry_run!(event)
 
       render json: {
         log: results[:log],
