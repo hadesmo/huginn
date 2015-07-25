@@ -1,5 +1,5 @@
 module DryRunnable
-  def dry_run!
+  def dry_run!(event = nil)
     readonly!
 
     class << self
@@ -14,7 +14,12 @@ module DryRunnable
 
     begin
       raise "#{short_type} does not support dry-run" unless can_dry_run?
-      check
+      if event
+        raise "This agent cannot receive an event!" unless can_receive_events?
+        receive([event])
+      else
+        check
+      end
     rescue => e
       error "Exception during dry-run. #{e.message}: #{e.backtrace.join("\n")}"
     end
